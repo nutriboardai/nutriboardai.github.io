@@ -98,14 +98,14 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({
     if (currentTotalMins < fromMins) {
       return {
         allowed: false,
-        reason: `Lunch bookings open today at ${bookingSettings.fromTime || '06:00'} AM. Booking window is not open yet.`
+        reason: `Lunch bookings open today at ${bookingSettings.fromTime || '06:00'} . Booking window is not open yet.`
       };
     }
 
     if (currentTotalMins > toMins) {
       return {
         allowed: false,
-        reason: `Lunch bookings closed at ${bookingSettings.toTime || bookingSettings.cutoffTime || '09:00'} AM. The cut-off time has passed for today.`
+        reason: `Lunch bookings closed at ${bookingSettings.toTime || bookingSettings.cutoffTime || '09:00'} . The cut-off time has passed for today.`
       };
     }
 
@@ -443,7 +443,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({
               <Clock className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <div className="text-2xl font-black text-white">{bookingSettings.cutoffTime || '09:00 AM'}</div>
+              <div className="text-2xl font-black text-white">{bookingSettings.cutoffTime || '09:00'}</div>
               <p className="text-xs text-slate-400 mt-1">
                 {isBookingBlocked ? (
                   <span className="text-rose-400 font-bold">Bookings closed for today</span>
@@ -584,7 +584,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({
                 </div>
                 <div>
                   <h3 className="text-sm font-extrabold flex items-center gap-2">
-                    <span>Lunch Booking Window: {bookingSettings.fromTime || '06:00'} AM to {bookingSettings.toTime || bookingSettings.cutoffTime || '09:00'} AM</span>
+                    <span>Lunch Booking Window: {bookingSettings.fromTime || '06:00'}  to {bookingSettings.toTime || bookingSettings.cutoffTime || '09:00'} </span>
                     <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-full ${
                       windowCheck.allowed ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
                     }`}>

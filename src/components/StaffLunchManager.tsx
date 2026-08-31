@@ -330,7 +330,7 @@ export const StaffLunchManager: React.FC<StaffLunchManagerProps> = ({
           </div>
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Booking Cut-off Time</span>
-            <div className="text-2xl font-black text-white mt-1">{bookingSettings.cutoffTime || '09:00'} AM</div>
+            <div className="text-2xl font-black text-white mt-1">{bookingSettings.cutoffTime || '09:00'} </div>
             <p className="text-[11px] text-slate-400">
               {bookingSettings.isBookingAllowed ? 'Bookings currently OPEN' : 'Bookings CLOSED by admin'}
             </p>
