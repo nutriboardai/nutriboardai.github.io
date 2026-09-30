@@ -1,0 +1,6 @@
+{
+  "name": "NutriBoard AI",
+  "description": "AI-powered Smart School Canteen & Nutrition Awareness System with Smart Board display, age-appropriate nutrition insights, and food waste reduction analytics.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

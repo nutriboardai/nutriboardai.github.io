@@ -1,0 +1,226 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation for Broadcast Config
+    function isValidBroadcastConfig(data) {
+      return data != null &&
+        (!('activeMealId' in data) || (data.activeMealId is string && data.activeMealId.size() <= 128)) &&
+        (!('activeAgeTier' in data) || (data.activeAgeTier is string && data.activeAgeTier.size() <= 32)) &&
+        (!('autoRotateAgeTiers' in data) || data.autoRotateAgeTiers is bool) &&
+        (!('announcementTicker' in data) || (data.announcementTicker is string && data.announcementTicker.size() <= 500)) &&
+        (!('isVoiceActive' in data) || data.isVoiceActive is bool) &&
+        (!('cleanPlateCount' in data) || (data.cleanPlateCount is number && data.cleanPlateCount >= 0)) &&
+        (!('lastUpdated' in data) || data.lastUpdated is number);
+    }
+
+    // Validation for Meal
+    function isValidMeal(data) {
+      return data != null &&
+        data.id is string && data.id.size() <= 128 &&
+        data.title is string && data.title.size() <= 200 &&
+        (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000000)) &&
+        (!('detectedItems' in data) || data.detectedItems is list) &&
+        (!('nutrition' in data) || data.nutrition is map) &&
+        (!('ageTierExplanations' in data) || data.ageTierExplanations is map) &&
+        (!('activeAgeTier' in data) || (data.activeAgeTier is string && data.activeAgeTier.size() <= 32)) &&
+        (!('sdgImpact' in data) || data.sdgImpact is map) &&
+        (!('timestamp' in data) || data.timestamp is number) &&
+        (!('canteenStaffNotes' in data) || (data.canteenStaffNotes is string && data.canteenStaffNotes.size() <= 1000)) &&
+        (!('isActive' in data) || data.isActive is bool);
+    }
+
+    // Validation for WasteLog
+    function isValidWasteLog(data) {
+      return data != null &&
+        data.id is string && data.id.size() <= 128 &&
+        data.date is string && data.date.size() <= 32 &&
+        data.mealTitle is string && data.mealTitle.size() <= 200 &&
+        (!('ageTier' in data) || (data.ageTier is string && data.ageTier.size() <= 32)) &&
+        (!('totalPreparedKg' in data) || (data.totalPreparedKg is number && data.totalPreparedKg >= 0)) &&
+        (!('totalLeftoverKg' in data) || (data.totalLeftoverKg is number && data.totalLeftoverKg >= 0)) &&
+        (!('wastePercentage' in data) || (data.wastePercentage is number && data.wastePercentage >= 0 && data.wastePercentage <= 100)) &&
+        (!('leftoverItems' in data) || data.leftoverItems is list) &&
+        (!('costLossEstimate' in data) || (data.costLossEstimate is number && data.costLossEstimate >= 0)) &&
+        (!('co2ImpactKg' in data) || (data.co2ImpactKg is number && data.co2ImpactKg >= 0)) &&
+        (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000));
+    }
+
+    // Validation for WasteInsight
+    function isValidWasteInsight(data) {
+      return data != null &&
+        (!('wasteReductionScore' in data) || (data.wasteReductionScore is number && data.wasteReductionScore >= 0 && data.wasteReductionScore <= 100)) &&
+        (!('averageWasteRate' in data) || (data.averageWasteRate is string && data.averageWasteRate.size() <= 32)) &&
+        (!('keyInsights' in data) || data.keyInsights is list) &&
+        (!('sdg12ImpactMetrics' in data) || data.sdg12ImpactMetrics is map) &&
+        (!('smartBoardStudentChallenge' in data) || (data.smartBoardStudentChallenge is string && data.smartBoardStudentChallenge.size() <= 500)) &&
+        (!('updatedAt' in data) || data.updatedAt is number);
+    }
+
+    // Validation for SchoolSetting
+    function isValidSchoolSetting(data) {
+      return data != null &&
+        (!('schoolName' in data) || (data.schoolName is string && data.schoolName.size() <= 200)) &&
+        (!('schoolLogo' in data) || (data.schoolLogo is string && data.schoolLogo.size() <= 500000)) &&
+        (!('updatedAt' in data) || data.updatedAt is number);
+    }
+
+    // Validation for StaffAccount
+    function isValidStaffAccount(data) {
+      return data != null &&
+        data.id is string && data.id.size() <= 128 &&
+        data.name is string && data.name.size() <= 100 &&
+        data.username is string && data.username.size() <= 100 &&
+        (!('password' in data) || (data.password is string && data.password.size() <= 100)) &&
+        (!('role' in data) || (data.role is string && data.role.size() <= 100)) &&
+        (!('createdAt' in data) || data.createdAt is number);
+    }
+
+    // Validation for ParentAccount
+    function isValidParentAccount(data) {
+      return data != null &&
+        data.id is string && data.id.size() <= 128 &&
+        data.name is string && data.name.size() <= 100 &&
+        data.username is string && data.username.size() <= 100 &&
+        data.studentId is string && data.studentId.size() <= 100 &&
+        data.studentName is string && data.studentName.size() <= 100 &&
+        data.grade is string && data.grade.size() <= 50 &&
+        (!('walletBalance' in data) || data.walletBalance is number) &&
+        (!('createdAt' in data) || data.createdAt is number);
+    }
+
+    // Validation for LunchBooking
+    function isValidLunchBooking(data) {
+      return data != null &&
+        data.id is string && data.id.size() <= 128 &&
+        data.parentId is string && data.parentId.size() <= 128 &&
+        data.studentId is string && data.studentId.size() <= 100 &&
+        data.mealId is string && data.mealId.size() <= 128 &&
+        data.pickupPin is string && data.pickupPin.size() <= 32 &&
+        data.bookingDate is string && data.bookingDate.size() <= 32 &&
+        data.status is string && data.status.size() <= 32;
+    }
+
+    // Validation for WalletTransaction
+    function isValidWalletTransaction(data) {
+      return data != null &&
+        data.id is string && data.id.size() <= 128 &&
+        data.parentId is string && data.parentId.size() <= 128 &&
+        data.studentId is string && data.studentId.size() <= 100 &&
+        data.type is string && (data.type == 'credit' || data.type == 'debit') &&
+        data.amount is number && data.amount >= 0 &&
+        data.description is string && data.description.size() <= 500 &&
+        data.timestamp is number;
+    }
+
+    // Validation for ParentNotification
+    function isValidParentNotification(data) {
+      return data != null &&
+        data.id is string && data.id.size() <= 128 &&
+        data.parentId is string && data.parentId.size() <= 128 &&
+        data.title is string && data.title.size() <= 200 &&
+        data.message is string && data.message.size() <= 1000 &&
+        data.type is string &&
+        data.isRead is bool &&
+        data.timestamp is number;
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Broadcast configuration documents
+    match /broadcast/{configId} {
+      allow get: if isValidId(configId);
+      allow list: if true;
+      allow create, update: if isValidId(configId) && isValidBroadcastConfig(incoming());
+      allow delete: if isValidId(configId);
+    }
+
+    // Meal records
+    match /meals/{mealId} {
+      allow get: if isValidId(mealId);
+      allow list: if true;
+      allow create, update: if isValidId(mealId) && isValidMeal(incoming());
+      allow delete: if isValidId(mealId);
+    }
+
+    // Waste logs
+    match /waste_logs/{logId} {
+      allow get: if isValidId(logId);
+      allow list: if true;
+      allow create, update: if isValidId(logId) && isValidWasteLog(incoming());
+      allow delete: if isValidId(logId);
+    }
+
+    // Waste insights
+    match /waste_insights/{insightId} {
+      allow get: if isValidId(insightId);
+      allow list: if true;
+      allow create, update: if isValidId(insightId) && isValidWasteInsight(incoming());
+      allow delete: if isValidId(insightId);
+    }
+
+    // School settings (branding & logo)
+    match /settings/{settingId} {
+      allow get: if isValidId(settingId);
+      allow list: if true;
+      allow create, update: if isValidId(settingId) && isValidSchoolSetting(incoming());
+      allow delete: if isValidId(settingId);
+    }
+
+    // Staff accounts
+    match /staff_accounts/{staffId} {
+      allow get: if isValidId(staffId);
+      allow list: if true;
+      allow create, update: if isValidId(staffId) && isValidStaffAccount(incoming());
+      allow delete: if isValidId(staffId);
+    }
+
+    // Parent accounts
+    match /parent_accounts/{parentId} {
+      allow get: if isValidId(parentId);
+      allow list: if true;
+      allow create, update: if isValidId(parentId) && isValidParentAccount(incoming());
+      allow delete: if isValidId(parentId);
+    }
+
+    // Lunch bookings
+    match /lunch_bookings/{bookingId} {
+      allow get: if isValidId(bookingId);
+      allow list: if true;
+      allow create, update: if isValidId(bookingId) && isValidLunchBooking(incoming());
+      allow delete: if isValidId(bookingId);
+    }
+
+    // Wallet transactions
+    match /wallet_transactions/{txId} {
+      allow get: if isValidId(txId);
+      allow list: if true;
+      allow create, update: if isValidId(txId) && isValidWalletTransaction(incoming());
+      allow delete: if isValidId(txId);
+    }
+
+    // Parent notifications
+    match /parent_notifications/{notifId} {
+      allow get: if isValidId(notifId);
+      allow list: if true;
+      allow create, update: if isValidId(notifId) && isValidParentNotification(incoming());
+      allow delete: if isValidId(notifId);
+    }
+  }
+}
