@@ -1,1 +1,19 @@
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      - name: Setup Environment File
+        run: |
+          # Create or populate the .env file using the GitHub Actions Secret
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+          # Or if your app uses GOOGLE_API_KEY:
+          # echo "GOOGLE_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+
+      # Add your build, test, or deployment steps here
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build
